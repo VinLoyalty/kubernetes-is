@@ -37,7 +37,7 @@ spec:
         monitoring: {{ .Values.wso2.monitoring.prometheus.jmxJobName }}
     spec:
       initContainers:
-        - name: init-mysql-connector-download
+        - name: init-wso2-extension-download
           image: busybox:1.32
           command:
             - /bin/sh
@@ -49,6 +49,10 @@ spec:
               wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.18/postgresql-42.2.18.jar -P /wso2is-extension-dropins/
               wget https://repo.repsy.io/mvn/hungdt138/authenticator/org/wso2/is/vinloyalty-grant/1.1.0/vinloyalty-grant-1.1.0.jar -P /wso2is-extension-lib/
               wget https://product-dist.wso2.com/downloads/is-connectors/1.0.0/office365/1.0.4/org.wso2.carbon.extension.identity.authenticator.office365.connector-1.0.4.jar -P /wso2is-extension-dropins/
+              wget https://apim.docs.wso2.com/en/4.0.0/assets/attachments/administer/wso2is-extensions-1.2.10.zip -P /wso2is-extension-webapps/
+              unzip /wso2is-extension-webapps/wso2is-extensions-1.2.10.zip
+              cp wso2is-extensions-1.2.10/dropins/* /wso2is-extension-dropins/
+              cp wso2is-extensions-1.2.10/webapps/* /wso2is-extension-webapps/
               rm /wso2is-extension-webapps/wso2is-extensions-1.2.10.zip
           volumeMounts:
             - name: wso2is-extension-dropins
