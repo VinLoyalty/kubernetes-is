@@ -43,10 +43,11 @@ data:
     type = "database_unique_id"
 
     [database.user]
-    url = "jdbc:mysql://wso2is-mysql-db-service:3306/WSO2IS_SHARED_DB?autoReconnect=true&amp;useSSL=false"
-    username = "wso2carbon"
-    password = "wso2carbon"
-    driver = "com.mysql.cj.jdbc.Driver"
+    type = "postgre"
+    url = "jdbc:postgresql://10.27.64.3:5432/wso2is?currentSchema=wso2is_shared_db"
+    username = "vinloyalty"
+    password = "1qazxsw@"
+    driver = "org.postgresql.Driver"
 
     [database.user.pool_options]
     validationQuery = "SELECT 1"
@@ -55,19 +56,21 @@ data:
     proxyPort="443"
 
     [database.identity_db]
-    url = "jdbc:mysql://wso2is-mysql-db-service:3306/WSO2IS_IDENTITY_DB?autoReconnect=true&amp;useSSL=false"
-    username = "wso2carbon"
-    password = "wso2carbon"
-    driver = "com.mysql.cj.jdbc.Driver"
+    type = "postgre"
+    url = "jdbc:postgresql://10.27.64.3:5432/wso2is?currentSchema=wso2is_identity_db"
+    username = "vinloyalty"
+    password = "1qazxsw@"
+    driver = "org.postgresql.Driver"
 
     [database.identity_db.pool_options]
     validationQuery = "SELECT 1"
 
     [database.shared_db]
-    url = "jdbc:mysql://wso2is-mysql-db-service:3306/WSO2IS_SHARED_DB?autoReconnect=true&amp;useSSL=false"
-    username = "wso2carbon"
-    password = "wso2carbon"
-    driver = "com.mysql.cj.jdbc.Driver"
+    type = "postgre"
+    url = "jdbc:postgresql://10.27.64.3:5432/wso2is?currentSchema=wso2is_shared_db"
+    username = "vinloyalty"
+    password = "1qazxsw@"
+    driver = "org.postgresql.Driver"
 
     [truststore]
     file_name="client-truststore.jks"
@@ -84,20 +87,22 @@ data:
     validationQuery = "SELECT 1"
 
     [database.bps_database]
-    url = "jdbc:mysql://wso2is-mysql-db-service:3306/WSO2IS_BPS_DB?autoReconnect=true&amp;useSSL=false"
-    username = "wso2carbon"
-    password = "wso2carbon"
-    driver = "com.mysql.cj.jdbc.Driver"
+    type = "postgre"
+    url = "jdbc:postgresql://10.27.64.3:5432/wso2is?currentSchema=wso2is_bps_db"
+    username = "vinloyalty"
+    password = "1qazxsw@"
+    driver = "org.postgresql.Driver"
 
     [database.bps_database.pool_options]
     validationQuery = "SELECT 1"
 
     [[datasource]]
     id = "WSO2ConsentDS"
-    url = "jdbc:mysql://wso2is-mysql-db-service:3306/WSO2IS_CONSENT_DB?autoReconnect=true&amp;useSSL=false"
-    username = "wso2carbon"
-    password = "wso2carbon"
-    driver = "com.mysql.cj.jdbc.Driver"
+    type = "postgre"
+    url = "jdbc:postgresql://10.27.64.3:5432/wso2is?currentSchema=wso2is_consent_db"
+    username = "vinloyalty"
+    password = "1qazxsw@"
+    driver = "org.postgresql.Driver"
     pool_options.validationQuery="SELECT 1"
     pool_options.maxActive=50
     pool_options.maxWait = 60000 # wait in milliseconds
@@ -119,6 +124,97 @@ data:
     properties.KUBERNETES_MASTER_SKIP_SSL_VERIFICATION = "true"
     properties.USE_DNS = "false"
 
+    [[event_listener]]
+    id = "token_revocation"
+    type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+    name = "org.wso2.is.notification.ApimOauthEventInterceptor"
+    order = 1
+
+    [[resource.access_control]]
+    context = "(.)/keymanager-operations/user-info/claims(.)"
+    secure = true
+    http_method = "GET"
+    permissions = "/permission/admin/manage/identity/usermgt/list"
+    scopes = "internal_user_mgt_list"
+
+    [[resource.access_control]]
+    context = "(.*)/keymanager-operations/user-info/claims/generate"
+    secure = true
+    http_method = "POST"
+    permissions = "/permission/admin/manage/identity/usermgt/list"
+    scopes = "internal_user_mgt_list"
+
+    [[resource.access_control]]
+    context = "(.*)/keymanager-operations/dcr/register"
+    secure = true
+    http_method = "POST"
+    permissions = "/permission/admin/manage/identity/applicationmgt/create"
+    scopes = "internal_application_mgt_create"
+
+    [[resource.access_control]]
+    context = "(.*)/keymanager-operations/dcr/register(.*)"
+    secure = true
+    http_method = "GET"
+    permissions = "/permission/admin/manage/identity/applicationmgt/view"
+    scopes = "internal_application_mgt_view"
+
+    [[resource.access_control]]
+    context = "(.*)/keymanager-operations/dcr/register(.*)"
+    secure = true
+    http_method = "DELETE"
+    permissions = "/permission/admin/manage/identity/applicationmgt/delete"
+    scopes = "internal_application_mgt_delete"
+
+    [[resource.access_control]]
+    context = "(.*)/keymanager-operations/dcr/register(.*)"
+    secure = true
+    http_method = "PUT"
+    permissions = "/permission/admin/manage/identity/applicationmgt/update"
+    scopes = "internal_application_mgt_update"
+
+    [[resource.access_control]]
+    context = "(.)/keymanager-operations/dcr/register(.)"
+    secure = true
+    http_method = "POST"
+    permissions = "/permission/admin/manage/identity/applicationmgt/update"
+    scopes = "internal_application_mgt_update"
+
+    [[resource.access_control]]
+    context = "/sample-auth(.*)"
+    secure = false
+    http_method = "all"
+
+    [tenant_context.rewrite]
+    custom_webapps = ["/keymanager-operations/"]
+
+    [event_listener.properties]
+    notification_endpoint = "https://localhost:9443/internal/data/v1/notify"
+    username = "${admin.username}"
+    password = "${admin.password}"
+    'header.X-WSO2-KEY-MANAGER' = "WSO2IS"
+
+    [cors]
+    allow_generic_http_requests = true
+    allow_any_origin = true
+    allowed_origins = "*"
+
+    [admin_service.wsdl]
+    enable = true
+
+    [oauth.token_renewal]
+    renew_refresh_token = true
+
+    [oauth.token_generation]
+    access_token_type= "self_contained"
+
+    [[oauth.custom_grant_type]]
+    name="vinloyalty"
+    grant_handler="org.wso2.identity.oauth2.grant.vinloyalty.VinloyaltyCustomGrant"
+    grant_validator="org.wso2.identity.oauth2.grant.vinloyalty.VinloyaltyCustomGrantValidator"
+
+    [oauth.custom_grant_type.properties]
+    IdTokenAllowed=true
+    
     {{ if .Values.wso2.monitoring.enabled }}
     [monitoring.jmx]
     rmi_server_start = true
